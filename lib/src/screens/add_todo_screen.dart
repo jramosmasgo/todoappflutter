@@ -1,6 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:todo_friend/src/widgets/input_field.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_friend/src/entities/task_entity.dart';
+import 'package:todo_friend/src/providers/task_provider.dart';
+import 'package:todo_friend/src/services/task_service.dart';
 
 class AddTodoScreen extends StatefulWidget {
   const AddTodoScreen({super.key});
@@ -11,9 +15,71 @@ class AddTodoScreen extends StatefulWidget {
 
 class _AddTodoScreenState extends State<AddTodoScreen> {
   TextEditingController taskName = TextEditingController();
+  TextEditingController taskDetail = TextEditingController();
+  TextEditingController taskDuration = TextEditingController();
+  TextEditingController taskLocation = TextEditingController();
+
   DateTime startDate = DateTime.now();
-  String dropDownValue = 'uno';
-  String dropDownImportantLevelValue = 'bajo';
+  String dropDownValueRepetir = 'uno';
+  int dropDownImportantLevelValue = 1;
+  bool taskAlert = false;
+
+  saveData() async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    TaskEntity newTask = TaskEntity(
+        id: '',
+        title: taskName.text,
+        details: taskDetail.text,
+        startDate: startDate,
+        durationMinutes: int.parse(taskDuration.text),
+        level: dropDownImportantLevelValue,
+        location: taskLocation.text,
+        alert: taskAlert,
+        repeatType: dropDownValueRepetir);
+
+    var service = TaskService();
+    bool result = await service.sendDataTask(newTask);
+
+    Navigator.of(context).pop();
+
+    if (result) {
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      taskProvider.addTask(newTask);
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.pop(context);
+                      },
+                      child: Text('Ok'))
+                ],
+                title: const Text('Tarea registrada'),
+              ));
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Ok'))
+                ],
+                title: Text('Algo salio Mal vuelvalo a intentar'),
+              ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,21 +89,25 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
           backgroundColor: Colors.transparent,
           toolbarHeight: 70,
           elevation: 0,
-          title: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Cancelar',
-                  style: TextStyle(color: Colors.purple, fontSize: 20),
-                ),
-                Text(
-                  'Agregar Tarea',
-                  style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.w600),
-                ),
-                Text('Agregar',
-                    style: TextStyle(color: Colors.purple, fontSize: 20))
-              ]),
+          title:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            const SizedBox(
+              width: 30,
+            ),
+            const Text(
+              'Agregar Tarea',
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+            ),
+            TextButton(
+                onPressed: () {
+                  saveData();
+                },
+                child: const Text(
+                  'Crear',
+                  style: TextStyle(fontSize: 20),
+                ))
+          ]),
         ),
         body: Container(
           color: const Color(0xFFEEEFF5),
@@ -53,6 +123,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                           vertical: 0, horizontal: 10),
                       color: Colors.white,
                       child: TextFormField(
+                        controller: taskName,
                         decoration: const InputDecoration(
                             border: InputBorder.none,
                             fillColor: Colors.red,
@@ -74,10 +145,11 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                           vertical: 0, horizontal: 10),
                       color: Colors.white,
                       child: TextFormField(
+                        controller: taskDetail,
                         decoration: const InputDecoration(
                             border: InputBorder.none,
                             fillColor: Colors.red,
-                            label: Text('Descripcion')),
+                            label: Text('Descripcion (opcional)')),
                       ),
                     ),
                   ],
@@ -99,7 +171,8 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text('Inicio'),
-                          Text(startDate.toString()),
+                          Text(
+                              DateFormat('dd/MM/yyyy kk:mm').format(startDate)),
                           OutlinedButton(
                             child: const Icon(Icons.calendar_month),
                             onPressed: () {
@@ -137,6 +210,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                           vertical: 0, horizontal: 10),
                       color: Colors.white,
                       child: TextFormField(
+                        controller: taskDuration,
                         keyboardType: const TextInputType.numberWithOptions(),
                         decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -163,7 +237,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                         children: [
                           const Text('Repetir'),
                           DropdownButton<String>(
-                            value: dropDownValue,
+                            value: dropDownValueRepetir,
                             items: const [
                               DropdownMenuItem<String>(
                                 value: 'uno',
@@ -180,7 +254,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                             ],
                             onChanged: (value) {
                               setState(() {
-                                dropDownValue = value!;
+                                dropDownValueRepetir = value!;
                               });
                             },
                             icon: const Icon(Icons.menu_sharp),
@@ -209,16 +283,16 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                           DropdownButton(
                               value: dropDownImportantLevelValue,
                               items: const [
-                                DropdownMenuItem<String>(
-                                  value: 'bajo',
+                                DropdownMenuItem<int>(
+                                  value: 1,
                                   child: Text("Bajo"),
                                 ),
-                                DropdownMenuItem<String>(
-                                  value: 'medio',
+                                DropdownMenuItem<int>(
+                                  value: 2,
                                   child: Text("Medio"),
                                 ),
-                                DropdownMenuItem<String>(
-                                  value: 'alto',
+                                DropdownMenuItem<int>(
+                                  value: 3,
                                   child: Text("Alto"),
                                 ),
                               ],
@@ -245,6 +319,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                           vertical: 0, horizontal: 10),
                       color: Colors.white,
                       child: TextFormField(
+                        controller: taskLocation,
                         decoration: const InputDecoration(
                             border: InputBorder.none,
                             fillColor: Colors.red,
@@ -270,8 +345,12 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                         children: [
                           const Text('Alerta'),
                           CupertinoSwitch(
-                            value: false,
-                            onChanged: (value) => {},
+                            value: taskAlert,
+                            onChanged: (value) => {
+                              setState(() {
+                                taskAlert = value;
+                              })
+                            },
                           )
                         ],
                       ),

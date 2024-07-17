@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:todo_friend/src/entities/task_entity.dart';
 
 class ListItem extends StatelessWidget {
-  final String title;
-  final String description;
-  final Color colorLevel;
+  final TaskEntity task;
 
-  const ListItem(
-      {super.key,
-      required this.title,
-      required this.description,
-      required this.colorLevel});
+  const ListItem({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -19,25 +14,40 @@ class ListItem extends StatelessWidget {
           border: Border.all(color: Theme.of(context).primaryColor)),
       margin: const EdgeInsets.only(bottom: 15),
       child: ListTile(
-        tileColor: colorLevel,
+        tileColor: task.level == 3
+            ? Colors.red
+            : task.level == 2
+                ? Colors.orange
+                : Colors.green,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
         title: Text(
-          title,
+          task.title,
           style:
               const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
         ),
         subtitle: Text(
-          description,
+          '${task.durationMinutes.toString()} min | ${task.startDate.hour}:${task.startDate.minute}',
           style: const TextStyle(color: Colors.white),
         ),
         leading: const Icon(
           color: Colors.white,
           Icons.today,
         ),
-        trailing: Icon(
-          color: Theme.of(context).primaryColor,
-          Icons.arrow_forward_ios,
+        trailing: RichText(
+          text: const TextSpan(
+            children: [
+              WidgetSpan(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.0),
+                  child: Icon(
+                    Icons.alarm,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

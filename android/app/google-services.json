@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "540125662018",
+    "project_id": "todoapp-ccb80",
+    "storage_bucket": "todoapp-ccb80.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:540125662018:android:2ee7b3036afdac94a716db",
+        "android_client_info": {
+          "package_name": "com.example.todo_friend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRnX0e9s6OaNVtFtAI0bFXcDYOhv7gI5Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

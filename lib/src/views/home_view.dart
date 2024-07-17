@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_friend/src/providers/task_provider.dart';
 import 'package:todo_friend/src/widgets/list_item.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
   @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  @override
   Widget build(BuildContext context) {
+    final taskprovider = context.watch<TaskProvider>();
+
     return Scaffold(
       body: Stack(
         children: [
@@ -24,7 +33,7 @@ class HomeView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Today',
+                        'Mis Tareas',
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w500,
@@ -34,29 +43,19 @@ class HomeView extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: ListView(
+                  child: ListView.builder(
                     shrinkWrap: true,
                     primary: false,
-                    children: [
-                      Material(
+                    itemCount: taskprovider.tasks.length,
+                    itemBuilder: (context, index) {
+                      final tasks = taskprovider.tasks;
+
+                      return Material(
                         child: ListItem(
-                            title: "Estudiar Ingles",
-                            description: "description",
-                            colorLevel: Colors.red.shade400),
-                      ),
-                      Material(
-                        child: ListItem(
-                            title: "Aprender Guitarra",
-                            description: "description",
-                            colorLevel: Colors.green.shade400),
-                      ),
-                      Material(
-                        child: ListItem(
-                            title: "Universidad Recoger Panfletos",
-                            description: "description",
-                            colorLevel: Colors.orange.shade400),
-                      ),
-                    ],
+                          task: tasks[index],
+                        ),
+                      );
+                    },
                   ),
                 )
               ],

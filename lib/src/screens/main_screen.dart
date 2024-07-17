@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_friend/src/providers/task_provider.dart';
 import 'package:todo_friend/src/screens/add_todo_screen.dart';
+import 'package:todo_friend/src/services/task_service.dart';
 import 'package:todo_friend/src/views/add_task_view.dart';
 import 'package:todo_friend/src/views/home_view.dart';
 import 'package:todo_friend/src/views/search_task_view.dart';
@@ -15,6 +17,19 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int selectedIndex = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    var taskService = TaskService();
+    Future.delayed(Duration.zero, () async {
+      var result = await taskService.getTasks();
+      taskProvider.addListTask(result);
+      //your async 'await' codes goes here
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +51,12 @@ class _MainScreenState extends State<MainScreen> {
         decoration: const BoxDecoration(shape: BoxShape.circle),
         child: FloatingActionButton(
           onPressed: () {
-            GoRouter.of(context).go('/add');
+            // GoRouter.of(context).go('/add');
+            showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return const PopScope(child: AddTodoScreen());
+                });
           },
           child: const Icon(Icons.add),
         ),
@@ -60,7 +80,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_month),
-              label: 'List',
+              label: 'Lista',
             ),
           ]),
     );
