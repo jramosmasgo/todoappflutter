@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_friend/src/providers/task_provider.dart';
+import 'package:todo_friend/src/services/user_service.dart';
+import 'package:todo_friend/src/widgets/alerts_app.dart';
 import 'package:todo_friend/src/widgets/input_field.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -6,6 +11,42 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController emailController = TextEditingController();
+    TextEditingController passowordController = TextEditingController();
+
+    login() async {
+      AlertsApp.showLoading(context);
+
+      var result = await UserService()
+          .loginUserGoogle(emailController.text, passowordController.text);
+
+      if (result != null) {
+        final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+        taskProvider.addUser(result);
+        Navigator.of(context).pop();
+        GoRouter.of(context).go('/home');
+      } else {
+        Navigator.of(context).pop();
+        return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+            'La contrasena o el correo no existen!', () {});
+      }
+    }
+
+    loginGoogle() async {
+      var result = await UserService().loginWithButtonGoogle();
+
+      if (result != null) {
+        final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+        taskProvider.addUser(result);
+        Navigator.of(context).pop();
+        GoRouter.of(context).go('/home');
+      } else {
+        Navigator.of(context).pop();
+        return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+            'La contrasena o el correo no existen!', () {});
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
           child: Center(
@@ -38,11 +79,13 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(
                 height: 40,
               ),
-              const InputField(
+              InputField(
+                controller: emailController,
                 label: 'Email',
                 icon: Icons.email_outlined,
               ),
-              const InputField(
+              InputField(
+                controller: passowordController,
                 label: 'Contrasenia',
                 icon: Icons.password_outlined,
               ),
@@ -66,7 +109,9 @@ class LoginScreen extends StatelessWidget {
                 height: 45,
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    login();
+                  },
                   style: OutlinedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     shape: const RoundedRectangleBorder(
@@ -108,6 +153,7 @@ class LoginScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // Aquí puedes agregar la lógica para iniciar sesión con Google
+                  loginGoogle();
                 },
                 style: ElevatedButton.styleFrom(
                   side: const BorderSide(color: Colors.grey),

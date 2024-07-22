@@ -7,14 +7,14 @@ import 'package:todo_friend/src/providers/task_provider.dart';
 import 'package:todo_friend/src/services/task_service.dart';
 import 'package:todo_friend/src/widgets/alerts_app.dart';
 
-class AddTodoScreen extends StatefulWidget {
-  const AddTodoScreen({super.key});
+class AddTodo extends StatefulWidget {
+  const AddTodo({super.key});
 
   @override
-  State<AddTodoScreen> createState() => _AddTodoScreenState();
+  State<AddTodo> createState() => _AddTodoState();
 }
 
-class _AddTodoScreenState extends State<AddTodoScreen> {
+class _AddTodoState extends State<AddTodo> {
   TextEditingController taskName = TextEditingController();
   TextEditingController taskDetail = TextEditingController();
   TextEditingController taskDuration = TextEditingController();
@@ -43,17 +43,23 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
 
     var result = await TaskService().sendDataTask(newTask);
 
-    Navigator.of(context).pop();
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
 
     if (result != null) {
       taskProvider.addTask(result);
-      return AlertsApp.showMessage(
-          context, 'Completado', 'Ok', 'La tarea fue registrada', () {
-        Navigator.of(context).pop();
-      });
+      if (mounted) {
+        return AlertsApp.showMessage(
+            context, 'Completado', 'Ok', 'La tarea fue registrada', () {
+          Navigator.of(context).pop();
+        });
+      }
     } else {
-      return AlertsApp.showMessage(context, 'Error', 'Cerrar',
-          'Algo salio mal intentalo de nuevo', () {});
+      if (mounted) {
+        return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+            'Algo salio mal intentalo de nuevo', () {});
+      }
     }
   }
 
@@ -341,14 +347,3 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
     );
   }
 }
-
-// Container(
-//                           color: Colors.white,
-//                           padding:
-//                               EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-//                           child: TextFormField(
-//                             decoration: const InputDecoration(
-//                                 border: InputBorder.none,
-//                                 fillColor: Colors.red,
-//                                 label: Text('Titulo')),
-//                           )),

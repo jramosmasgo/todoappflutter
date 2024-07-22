@@ -1,8 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_friend/src/config/user_database.dart';
+import 'package:todo_friend/src/entities/user_entity.dart';
+import 'package:todo_friend/src/providers/task_provider.dart';
 
-class InitScreen extends StatelessWidget {
+class InitScreen extends StatefulWidget {
   const InitScreen({super.key});
+
+  @override
+  State<InitScreen> createState() => _InitScreenState();
+}
+
+class _InitScreenState extends State<InitScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    Future.delayed(Duration.zero, () async {
+      var userLogged = await UserHelper().getUserLogged();
+
+      if (userLogged != null) {
+        UserEntity user = UserEntity(
+            id: userLogged.userId,
+            name: userLogged.name,
+            email: userLogged.email,
+            firebaseId: userLogged.firebaseId,
+            profileImage: userLogged.profileImage,
+            phone: userLogged.phone);
+        taskProvider.addUser(user);
+        if (mounted) {
+          GoRouter.of(context).go('/home');
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +49,7 @@ class InitScreen extends StatelessWidget {
               width: 370,
               child: ClipRect(
                 child: Image.network(
-                    'https://www.prosoftly.com/wp-content/uploads/2020/01/task.png'),
+                    'https://res.cloudinary.com/musica-reservation/image/upload/v1721250868/task_c29wb6.png'),
               ),
             ),
             Text(

@@ -19,13 +19,17 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => TaskProvider())],
-      child: MaterialApp.router(
-        title: 'Todo Friend',
-        debugShowCheckedModeBanner: false,
-        theme: lightTheme,
-        // home: const MainScreen(),
-        routerConfig: appRouter,
-      ),
+      builder: (context, child) {
+        final taskProvider = context.watch<TaskProvider>();
+        return MaterialApp.router(
+          title: 'Todo Friend',
+          debugShowCheckedModeBanner: false,
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: taskProvider.darkTheme ? ThemeMode.dark : ThemeMode.light,
+          routerConfig: appRouter,
+        );
+      },
     );
   }
 }

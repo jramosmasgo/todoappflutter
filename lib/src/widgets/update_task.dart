@@ -7,14 +7,16 @@ import 'package:todo_friend/src/providers/task_provider.dart';
 import 'package:todo_friend/src/services/task_service.dart';
 import 'package:todo_friend/src/widgets/alerts_app.dart';
 
-class AddTodoScreen extends StatefulWidget {
-  const AddTodoScreen({super.key});
+class UpdateTask extends StatefulWidget {
+  final TaskEntity taksToEdit;
+
+  const UpdateTask({super.key, required this.taksToEdit});
 
   @override
-  State<AddTodoScreen> createState() => _AddTodoScreenState();
+  State<UpdateTask> createState() => _UpdateTaskState();
 }
 
-class _AddTodoScreenState extends State<AddTodoScreen> {
+class _UpdateTaskState extends State<UpdateTask> {
   TextEditingController taskName = TextEditingController();
   TextEditingController taskDetail = TextEditingController();
   TextEditingController taskDuration = TextEditingController();
@@ -25,12 +27,12 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
   int dropDownImportantLevelValue = 1;
   bool taskAlert = false;
 
-  saveData() async {
+  update() async {
     AlertsApp.showLoading(context);
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
-    TaskEntity newTask = TaskEntity(
-        id: '',
+    TaskEntity editedTask = TaskEntity(
+        id: widget.taksToEdit.id,
         title: taskName.text,
         details: taskDetail.text,
         startDate: startDate,
@@ -41,20 +43,68 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
         repeatType: dropDownValueRepetir,
         userId: taskProvider.userlogued.id);
 
-    var result = await TaskService().sendDataTask(newTask);
+    var result = await TaskService().updateDataTask(editedTask);
 
-    Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop();
 
     if (result != null) {
-      taskProvider.addTask(result);
-      return AlertsApp.showMessage(
-          context, 'Completado', 'Ok', 'La tarea fue registrada', () {
-        Navigator.of(context).pop();
-      });
+      taskProvider.updateListTask(result);
+      if (mounted) {
+        return AlertsApp.showMessage(
+            context, 'Completado', 'Ok', 'La tarea fue actualizada', () {
+          Navigator.of(context).pop();
+        });
+      }
     } else {
-      return AlertsApp.showMessage(context, 'Error', 'Cerrar',
-          'Algo salio mal intentalo de nuevo', () {});
+      if (mounted) {
+        return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+            'Algo salio mal intentalo de nuevo', () {});
+      }
     }
+  }
+
+  deleteAlert() async {
+    AlertsApp.showMessageOptions(context, "Alerta", "Cancelar", "Eliminar",
+        "Desea eliminar la tarea?", () {}, () async {
+      await delete();
+    });
+  }
+
+  delete() async {
+    AlertsApp.showLoading(context);
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    var result = await TaskService().deleteTask(widget.taksToEdit);
+
+    if (mounted) Navigator.of(context).pop();
+
+    if (result != null) {
+      taskProvider.deleteTask(result);
+      if (mounted) {
+        return AlertsApp.showMessage(
+            context, 'Completado', 'Ok', 'La tarea fue eliminada', () {
+          Navigator.of(context).pop();
+        });
+      }
+    } else {
+      if (mounted) {
+        return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+            'Algo salio mal intentalo de nuevo', () {});
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    taskName.text = widget.taksToEdit.title;
+    taskDetail.text = widget.taksToEdit.details!;
+    taskDuration.text = widget.taksToEdit.durationMinutes.toString();
+    taskLocation.text = widget.taksToEdit.location!;
+
+    startDate = widget.taksToEdit.startDate;
+    dropDownImportantLevelValue = widget.taksToEdit.level;
+    dropDownValueRepetir = widget.taksToEdit.repeatType;
+    taskAlert = widget.taksToEdit.alert;
   }
 
   @override
@@ -71,16 +121,16 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
               width: 30,
             ),
             const Text(
-              'Agregar Tarea',
+              'Editar Tarea',
               style:
                   TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
             ),
             TextButton(
                 onPressed: () {
-                  saveData();
+                  update();
                 },
                 child: const Text(
-                  'Crear',
+                  'Actualizar',
                   style: TextStyle(fontSize: 20),
                 ))
           ]),
@@ -333,6 +383,23 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                     )
                   ],
                 ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all(Colors.red),
+                      ),
+                      onPressed: () {
+                        deleteAlert();
+                      },
+                      child: const Text("ELIMINAR TAREA",
+                          style: TextStyle(color: Colors.white))),
+                ],
               )
             ],
           ),
@@ -341,14 +408,3 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
     );
   }
 }
-
-// Container(
-//                           color: Colors.white,
-//                           padding:
-//                               EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-//                           child: TextFormField(
-//                             decoration: const InputDecoration(
-//                                 border: InputBorder.none,
-//                                 fillColor: Colors.red,
-//                                 label: Text('Titulo')),
-//                           )),

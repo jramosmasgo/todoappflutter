@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_friend/src/providers/task_provider.dart';
-import 'package:todo_friend/src/services/auth_firebase_service.dart';
 import 'package:todo_friend/src/services/user_service.dart';
+import 'package:todo_friend/src/widgets/alerts_app.dart';
 import 'package:todo_friend/src/widgets/input_field.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -19,19 +20,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   register() async {
     if (passwordController.text != repeatPasswordController.text) {
-      return showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Close'))
-                ],
-                title: const Text('Los passwords no coinciden.'),
-              ));
+      return AlertsApp.showMessage(
+          context, 'Error', 'Cerrar', 'Los passwords no coinciden', () {});
     }
+
+    AlertsApp.showLoading(context);
 
     var result = await UserService()
         .createUser(emailController.text, passwordController.text);
@@ -39,9 +32,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (result != null) {
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
       taskProvider.addUser(result);
+      Navigator.of(context).pop();
+      GoRouter.of(context).go('/home');
+    } else {
+      Navigator.of(context).pop();
+      return AlertsApp.showMessage(
+          context, 'Error', 'Cerrar', 'Upps! Algo salio mal!', () {});
     }
+  }
 
-    print(result);
+  loginGoogle() async {
+    var result = await UserService().loginWithButtonGoogle();
+
+    if (result != null) {
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      taskProvider.addUser(result);
+      Navigator.of(context).pop();
+      GoRouter.of(context).go('/home');
+    } else {
+      Navigator.of(context).pop();
+      return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+          'La contrasena o el correo no existen!', () {});
+    }
   }
 
   @override
@@ -148,8 +160,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ElevatedButton(
                 onPressed: () {
                   // Aquí puedes agregar la lógica para iniciar sesión con Google
-                  var authService = AuthFirebaseService();
-                  authService.signInWithGoogle();
+                  loginGoogle();
                 },
                 style: ElevatedButton.styleFrom(
                   side: const BorderSide(color: Colors.grey),
