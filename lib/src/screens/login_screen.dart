@@ -2,51 +2,65 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_friend/src/providers/task_provider.dart';
+import 'package:todo_friend/src/services/auth_firebase_service.dart';
 import 'package:todo_friend/src/services/user_service.dart';
 import 'package:todo_friend/src/widgets/alerts_app.dart';
 import 'package:todo_friend/src/widgets/input_field.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  login() async {
+    AlertsApp.showLoading(context);
+
+    var result = await UserService()
+        .loginUserFirebase(emailController.text, passowordController.text);
+
+    if (result != null) {
+      if (!mounted) return;
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      taskProvider.addUser(result);
+      Navigator.of(context).pop();
+      GoRouter.of(context).go('/home');
+    } else {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+          'La contrasena o el correo no existen!', () {});
+    }
+  }
+
+  loginGoogle() async {
+    var resultGoogle = await AuthFirebaseService().signInWithGoogle();
+    if (!mounted) return;
+    AlertsApp.showLoading(context);
+
+    var result = await UserService().loginWithButtonGoogle(resultGoogle);
+
+    if (result != null) {
+      if (!mounted) return;
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      taskProvider.addUser(result);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      GoRouter.of(context).go('/home');
+    } else {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return AlertsApp.showMessage(context, 'Error', 'Cerrar',
+          'Ocurrio un error intentalo de nuevo!', () {});
+    }
+  }
+
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passowordController = TextEditingController();
+  @override
   Widget build(BuildContext context) {
-    TextEditingController emailController = TextEditingController();
-    TextEditingController passowordController = TextEditingController();
-
-    login() async {
-      AlertsApp.showLoading(context);
-
-      var result = await UserService()
-          .loginUserGoogle(emailController.text, passowordController.text);
-
-      if (result != null) {
-        final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-        taskProvider.addUser(result);
-        Navigator.of(context).pop();
-        GoRouter.of(context).go('/home');
-      } else {
-        Navigator.of(context).pop();
-        return AlertsApp.showMessage(context, 'Error', 'Cerrar',
-            'La contrasena o el correo no existen!', () {});
-      }
-    }
-
-    loginGoogle() async {
-      var result = await UserService().loginWithButtonGoogle();
-
-      if (result != null) {
-        final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-        taskProvider.addUser(result);
-        Navigator.of(context).pop();
-        GoRouter.of(context).go('/home');
-      } else {
-        Navigator.of(context).pop();
-        return AlertsApp.showMessage(context, 'Error', 'Cerrar',
-            'La contrasena o el correo no existen!', () {});
-      }
-    }
-
     return Scaffold(
       body: SafeArea(
           child: Center(
@@ -88,6 +102,7 @@ class LoginScreen extends StatelessWidget {
                 controller: passowordController,
                 label: 'Contrasenia',
                 icon: Icons.password_outlined,
+                isVisible: false,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

@@ -3,10 +3,6 @@ import 'package:todo_friend/src/screens/init_screen.dart';
 import 'package:todo_friend/src/screens/login_screen.dart';
 import 'package:todo_friend/src/screens/main_screen.dart';
 import 'package:todo_friend/src/screens/register_screen.dart';
-import 'package:todo_friend/src/views/calendar_view.dart';
-import 'package:todo_friend/src/views/home_view.dart';
-import 'package:todo_friend/src/views/profile_view.dart';
-import 'package:todo_friend/src/views/settings_view.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/init',
@@ -14,24 +10,24 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/home',
       builder: (context, state) => const MainScreen(),
-      routes: [
-        GoRoute(
-          path: 'profile',
-          builder: (context, state) => const ProfileView(),
-        ),
-        GoRoute(
-          path: 'settings',
-          builder: (context, state) => const SettingsView(),
-        ),
-        GoRoute(
-          path: 'calendar',
-          builder: (context, state) => const CalendarView(),
-        ),
-        GoRoute(
-          path: 'main',
-          builder: (context, state) => const HomeView(),
-        ),
-      ],
+      // routes: [
+      //   GoRoute(
+      //     path: 'profile',
+      //     builder: (context, state) => const ProfileView(),
+      //   ),
+      //   GoRoute(
+      //     path: 'settings',
+      //     builder: (context, state) => const SettingsView(),
+      //   ),
+      //   GoRoute(
+      //     path: 'calendar',
+      //     builder: (context, state) => const CalendarView(),
+      //   ),
+      //   GoRoute(
+      //     path: 'main',
+      //     builder: (context, state) => const HomeView(),
+      //   ),
+      // ],
     ),
     GoRoute(
       path: '/login',

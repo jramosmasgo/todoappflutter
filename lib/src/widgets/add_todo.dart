@@ -39,7 +39,7 @@ class _AddTodoState extends State<AddTodo> {
         location: taskLocation.text,
         alert: taskAlert,
         repeatType: dropDownValueRepetir,
-        userId: taskProvider.userlogued.id);
+        userId: taskProvider.userlogued!.id);
 
     var result = await TaskService().sendDataTask(newTask);
 
@@ -68,7 +68,7 @@ class _AddTodoState extends State<AddTodo> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Theme.of(context).secondaryHeaderColor,
           toolbarHeight: 70,
           elevation: 0,
           title:
@@ -78,8 +78,7 @@ class _AddTodoState extends State<AddTodo> {
             ),
             const Text(
               'Agregar Tarea',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             TextButton(
                 onPressed: () {
@@ -92,7 +91,7 @@ class _AddTodoState extends State<AddTodo> {
           ]),
         ),
         body: Container(
-          color: const Color(0xFFEEEFF5),
+          color: Theme.of(context).scaffoldBackgroundColor,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: ListView(
             children: [
@@ -103,7 +102,7 @@ class _AddTodoState extends State<AddTodo> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskName,
                         decoration: const InputDecoration(
@@ -125,7 +124,7 @@ class _AddTodoState extends State<AddTodo> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskDetail,
                         decoration: const InputDecoration(
@@ -148,7 +147,7 @@ class _AddTodoState extends State<AddTodo> {
                       height: 57,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 0),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -163,7 +162,8 @@ class _AddTodoState extends State<AddTodo> {
                                   builder: (context) => SizedBox(
                                         height: 250,
                                         child: CupertinoDatePicker(
-                                          backgroundColor: Colors.white,
+                                          backgroundColor:
+                                              Theme.of(context).cardColor,
                                           initialDateTime: DateTime.now(),
                                           onDateTimeChanged: (DateTime value) {
                                             setState(() {
@@ -190,7 +190,7 @@ class _AddTodoState extends State<AddTodo> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskDuration,
                         keyboardType: const TextInputType.numberWithOptions(),
@@ -213,7 +213,7 @@ class _AddTodoState extends State<AddTodo> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -255,7 +255,7 @@ class _AddTodoState extends State<AddTodo> {
                 child: Column(
                   children: [
                     Container(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       padding: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
                       child: Row(
@@ -299,7 +299,7 @@ class _AddTodoState extends State<AddTodo> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskLocation,
                         decoration: const InputDecoration(
@@ -321,7 +321,7 @@ class _AddTodoState extends State<AddTodo> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 8),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

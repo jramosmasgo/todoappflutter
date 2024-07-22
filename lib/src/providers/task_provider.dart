@@ -5,9 +5,17 @@ import 'package:todo_friend/src/entities/user_entity.dart';
 class TaskProvider extends ChangeNotifier {
   List<TaskEntity> tasks = [];
   List<TaskEntity> tasksFiltered = [];
-  late UserEntity userlogued;
+  UserEntity? userlogued;
   DateTime selectedDate = DateTime.now();
   bool darkTheme = false;
+
+  resetStatus() {
+    tasks = [];
+    tasksFiltered = [];
+    userlogued = null;
+    selectedDate = DateTime.now();
+    darkTheme = false;
+  }
 
   setDarkMode(bool enabled) {
     darkTheme = enabled;
@@ -48,6 +56,8 @@ class TaskProvider extends ChangeNotifier {
   filterTasksByDate(DateTime daySelected) {
     var dayEntry =
         DateTime(daySelected.year, daySelected.month, daySelected.day);
+
+    if (tasks.isEmpty) return tasksFiltered = [];
 
     var onceTaks = tasks
         .where((x) =>

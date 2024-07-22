@@ -1,29 +1,31 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:todo_friend/src/config/global_variables.dart';
 import 'package:todo_friend/src/config/user_database.dart';
 import 'package:todo_friend/src/entities/user_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:todo_friend/src/services/auth_firebase_service.dart';
 
 class UserService {
-  Future<UserEntity?> createUser(String email, String password) async {
-    var result = await AuthFirebaseService()
-        .createUserWithEmailAndPassword(email, password);
+  urlTask(String? params) =>
+      Uri.https(GlobalVariables.apiUrl, "${GlobalVariables.user}$params");
 
-    Random random = Random();
-    int randomNumber = random.nextInt(100);
+  Future<UserEntity?> createUserApi(UserEntity user) async {
+    int randomNumber = Random().nextInt(100);
+    String defautImage =
+        "https://res.cloudinary.com/musica-reservation/image/upload/v1721613552/userDefault_b5jodf.png";
 
-    var url = Uri.https('my-todoapp-friend.onrender.com', '/api/user');
-
-    var response = await http.post(url,
+    var response = await http.post(urlTask(""),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "name": 'User ${randomNumber.toString()}',
-          "email": email,
-          "firebaseId": result?.uid,
+          "name":
+              user.name == "" ? 'User ${randomNumber.toString()}' : user.name,
+          "email": user.email,
+          "firebaseId": user.firebaseId,
           "profileImage":
-              'https://cdn-icons-png.freepik.com/512/9453/9453886.png',
+              user.profileImage == "" ? defautImage : user.profileImage,
           "phone": ''
         }));
 
@@ -37,10 +39,8 @@ class UserService {
     }
   }
 
-  Future<UserEntity?> loginUser(String email, String firebaseId) async {
-    var url = Uri.https('my-todoapp-friend.onrender.com', '/api/user/login');
-
-    var response = await http.put(url,
+  Future<UserEntity?> loginUserApi(String email, String firebaseId) async {
+    var response = await http.put(urlTask("/login"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "email": email,
@@ -49,88 +49,76 @@ class UserService {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonMap = json.decode(response.body);
-      return UserEntity.fromJson(jsonMap['data']['userFounded']);
+      var loginUser = UserEntity.fromJson(jsonMap['data']['userFounded']);
+      await setUserLogged(loginUser);
+      return loginUser;
     } else {
       return null;
     }
   }
 
-  Future<UserEntity?> loginUserGoogle(String email, String password) async {
-    var url = Uri.https('my-todoapp-friend.onrender.com', '/api/user/login');
+  Future<UserEntity?> createUserFirebase(String email, String password) async {
+    var result = await AuthFirebaseService()
+        .createUserWithEmailAndPassword(email, password);
 
+    if (result != null) {
+      var newUserFromFirebase = UserEntity(
+          id: "",
+          name: result.displayName ?? "",
+          email: result.email ?? "",
+          firebaseId: result.uid,
+          profileImage: result.photoURL ?? "",
+          phone: result.phoneNumber ?? "");
+
+      return await createUserApi(newUserFromFirebase);
+    }
+
+    return null;
+  }
+
+  Future<UserEntity?> loginUserFirebase(String email, String password) async {
     var result = await AuthFirebaseService()
         .loginUserWithEmailAndPassword(email, password);
 
     if (result != null) {
-      var response = await http.put(url,
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "email": email,
-            "firebaseId": result.uid,
-          }));
-
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonMap = json.decode(response.body);
-        var registeredUser =
-            UserEntity.fromJson(jsonMap['data']['userFounded']);
-        await setUserLogged(registeredUser);
-        return registeredUser;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
+      return await loginUserApi(email, result.uid);
     }
+
+    return null;
   }
 
-  Future<UserEntity?> loginWithButtonGoogle() async {
-    var url = Uri.https('my-todoapp-friend.onrender.com', '/api/user/login');
+  Future<UserEntity?> loginWithButtonGoogle(
+      UserCredential resultLoginGoogle) async {
+    // var resultLoginGoogle = await AuthFirebaseService().signInWithGoogle();
 
-    var result = await AuthFirebaseService().signInWithGoogle();
-
-    if (result.user != null) {
-      var response = await http.put(url,
+    if (resultLoginGoogle.user != null) {
+      var responseFirstLogin = await http.put(urlTask("/login"),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({
-            "email": result.user?.email,
-            "firebaseId": result.user?.uid,
+            "email": resultLoginGoogle.user?.email,
+            "firebaseId": resultLoginGoogle.user?.uid,
           }));
 
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonMap = json.decode(response.body);
-        var registeredUser =
-            UserEntity.fromJson(jsonMap['data']['userFounded']);
-        await setUserLogged(registeredUser);
-        return registeredUser;
-      } else {
-        var url2 = Uri.https('my-todoapp-friend.onrender.com', '/api/user');
-        Random random = Random();
-        int randomNumber = random.nextInt(100);
-
-        var responseCreation = await http.post(url2,
-            headers: {"Content-Type": "application/json"},
-            body: jsonEncode({
-              "name": 'User ${randomNumber.toString()}',
-              "email": result.user?.email,
-              "firebaseId": result.user?.uid,
-              "profileImage":
-                  'https://cdn-icons-png.freepik.com/512/9453/9453886.png',
-              "phone": ''
-            }));
-
-        if (responseCreation.statusCode == 200) {
-          Map<String, dynamic> jsonMap2 = json.decode(responseCreation.body);
-          var registeredUser = UserEntity.fromJson(jsonMap2['data']);
-          await setUserLogged(registeredUser);
+      if (responseFirstLogin.statusCode == 500) {
+        Map<String, dynamic> jsonMap = json.decode(responseFirstLogin.body);
+        if (jsonMap['message'] == "User not founded") {
+          var newUser = UserEntity(
+              id: "",
+              name: resultLoginGoogle.user?.displayName ?? "",
+              email: resultLoginGoogle.user?.email ?? "",
+              firebaseId: resultLoginGoogle.user?.uid ?? "",
+              profileImage: resultLoginGoogle.user?.photoURL ?? "",
+              phone: resultLoginGoogle.user?.phoneNumber ?? "");
+          return createUserApi(newUser);
         } else {
-          return null;
+          Map<String, dynamic> jsonMap = json.decode(responseFirstLogin.body);
+          var loginUser = UserEntity.fromJson(jsonMap['data']['userFounded']);
+          await setUserLogged(loginUser);
+          return loginUser;
         }
-
-        return null;
       }
-    } else {
-      return null;
     }
+    return null;
   }
 
   Future<void> setUserLogged(UserEntity user) async {

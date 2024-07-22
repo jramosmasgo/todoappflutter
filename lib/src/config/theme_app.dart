@@ -5,8 +5,8 @@ ThemeData lightTheme = ThemeData(
     scaffoldBackgroundColor: const Color(0xFFEEEFF5),
     cardColor: Colors.white,
     secondaryHeaderColor: Colors.white,
-    textSelectionTheme:
-        const TextSelectionThemeData(selectionColor: Colors.white),
+    textSelectionTheme: const TextSelectionThemeData(
+        selectionColor: Colors.white, selectionHandleColor: Colors.black),
     useMaterial3: true,
     primaryColor: const Color(0xFF5F33E1));
 
@@ -15,6 +15,7 @@ ThemeData lightTheme = ThemeData(
 ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     useMaterial3: true,
+    cardColor: const Color(0xFF17153B),
     // scaffoldBackgroundColor: Colors.black,
     secondaryHeaderColor: const Color(0xFF17153B),
     primaryColor: const Color(0xFF2E236C));

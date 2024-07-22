@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:todo_friend/src/config/user_database.dart';
 import 'package:todo_friend/src/entities/user_entity.dart';
 import 'package:todo_friend/src/providers/task_provider.dart';
 import 'package:todo_friend/src/services/task_service.dart';
 import 'package:todo_friend/src/views/home_view.dart';
 import 'package:todo_friend/src/views/profile_view.dart';
 import 'package:todo_friend/src/views/settings_view.dart';
+import 'package:todo_friend/src/widgets/alerts_app.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -18,15 +21,27 @@ class _MainScreenState extends State<MainScreen> {
   int selectedIndex = 0;
   int selectedIndexSidebar = 0;
 
+  exitApp() async {
+    AlertsApp.showMessageOptions(context, "Alerta", "Cancelar", "Salir",
+        "Esta seguro que desea eliminar salir de la sesion?", () {}, () async {
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      await UserHelper().deleteUser('');
+      taskProvider.resetStatus();
+      if (mounted) context.go("/init");
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
     Future.delayed(Duration.zero, () async {
-      var result = await TaskService().getTasks(taskProvider.userlogued.id);
-      taskProvider.addListTask(result);
-      if (result.isNotEmpty) taskProvider.filterTasksByDate(DateTime.now());
+      if (taskProvider.userlogued != null) {
+        var result = await TaskService().getTasks(taskProvider.userlogued!.id);
+        taskProvider.addListTask(result);
+        if (result.isNotEmpty) taskProvider.filterTasksByDate(DateTime.now());
+      }
     });
   }
 
@@ -37,13 +52,22 @@ class _MainScreenState extends State<MainScreen> {
     final views = [const HomeView(), const ProfileView(), const SettingsView()];
 
     return Scaffold(
-      appBar: _buildAppBar(taskProvider.userlogued.profileImage),
+      appBar: _buildAppBar(taskProvider.userlogued!.profileImage),
       body: SafeArea(
           child: IndexedStack(
         index: selectedIndex,
         children: views,
       )),
-      drawer: _buildDrawer(taskProvider.userlogued, selectedIndex),
+      drawer: _buildDrawer(
+          taskProvider.userlogued ??
+              UserEntity(
+                  id: '',
+                  name: '',
+                  email: '',
+                  firebaseId: '',
+                  profileImage: '',
+                  phone: ''),
+          selectedIndex),
     );
   }
 
@@ -110,11 +134,20 @@ class _MainScreenState extends State<MainScreen> {
                 : Colors.transparent,
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-            leading: const Icon(
+            leading: Icon(
               Icons.home,
+              color: activeRoute == 0
+                  ? Theme.of(context).textSelectionTheme.selectionColor
+                  : Theme.of(context).textSelectionTheme.selectionHandleColor,
             ),
-            title: const Text(
+            title: Text(
               'Home',
+              style: TextStyle(
+                  color: activeRoute == 0
+                      ? Theme.of(context).textSelectionTheme.selectionColor
+                      : Theme.of(context)
+                          .textSelectionTheme
+                          .selectionHandleColor),
             ),
           ),
           ListTile(
@@ -132,11 +165,20 @@ class _MainScreenState extends State<MainScreen> {
                   : Colors.transparent,
               contentPadding:
                   const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-              leading: const Icon(
+              leading: Icon(
                 Icons.account_circle,
+                color: activeRoute == 1
+                    ? Theme.of(context).textSelectionTheme.selectionColor
+                    : Theme.of(context).textSelectionTheme.selectionHandleColor,
               ),
-              title: const Text(
+              title: Text(
                 'Mi perfil',
+                style: TextStyle(
+                    color: activeRoute == 1
+                        ? Theme.of(context).textSelectionTheme.selectionColor
+                        : Theme.of(context)
+                            .textSelectionTheme
+                            .selectionHandleColor),
               )),
           ListTile(
             onTap: () {
@@ -153,16 +195,25 @@ class _MainScreenState extends State<MainScreen> {
                 : Colors.transparent,
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-            leading: const Icon(
+            leading: Icon(
               Icons.settings,
+              color: activeRoute == 2
+                  ? Theme.of(context).textSelectionTheme.selectionColor
+                  : Theme.of(context).textSelectionTheme.selectionHandleColor,
             ),
-            title: const Text(
+            title: Text(
               'Configuracion',
+              style: TextStyle(
+                  color: activeRoute == 2
+                      ? Theme.of(context).textSelectionTheme.selectionColor
+                      : Theme.of(context)
+                          .textSelectionTheme
+                          .selectionHandleColor),
             ),
           ),
           ListTile(
             onTap: () {
-              print("hola $activeRoute");
+              exitApp();
             },
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

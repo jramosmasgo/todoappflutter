@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_friend/src/providers/task_provider.dart';
+import 'package:todo_friend/src/services/auth_firebase_service.dart';
 import 'package:todo_friend/src/services/user_service.dart';
 import 'package:todo_friend/src/widgets/alerts_app.dart';
 import 'package:todo_friend/src/widgets/input_field.dart';
@@ -27,14 +28,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     AlertsApp.showLoading(context);
 
     var result = await UserService()
-        .createUser(emailController.text, passwordController.text);
+        .createUserFirebase(emailController.text, passwordController.text);
 
     if (result != null) {
+      if (!mounted) return;
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
       taskProvider.addUser(result);
       Navigator.of(context).pop();
       GoRouter.of(context).go('/home');
     } else {
+      if (!mounted) return;
       Navigator.of(context).pop();
       return AlertsApp.showMessage(
           context, 'Error', 'Cerrar', 'Upps! Algo salio mal!', () {});
@@ -42,17 +45,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   loginGoogle() async {
-    var result = await UserService().loginWithButtonGoogle();
+    var resultGoogle = await AuthFirebaseService().signInWithGoogle();
+    if (!mounted) return;
+    AlertsApp.showLoading(context);
+
+    var result = await UserService().loginWithButtonGoogle(resultGoogle);
 
     if (result != null) {
+      if (!mounted) return;
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
       taskProvider.addUser(result);
       Navigator.of(context).pop();
       GoRouter.of(context).go('/home');
     } else {
+      if (!mounted) return;
       Navigator.of(context).pop();
       return AlertsApp.showMessage(context, 'Error', 'Cerrar',
-          'La contrasena o el correo no existen!', () {});
+          'Ocurrio un error intentalo de nuevo!', () {});
     }
   }
 

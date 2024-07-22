@@ -36,7 +36,7 @@ class _SettingsViewState extends State<SettingsView> {
               child: ListView(
                 children: [
                   ListTile(
-                    tileColor: Colors.white,
+                    tileColor: Theme.of(context).cardColor,
                     leading: const Icon(Icons.dark_mode),
                     title: const Text('Color de Tema'),
                     trailing: CupertinoSwitch(

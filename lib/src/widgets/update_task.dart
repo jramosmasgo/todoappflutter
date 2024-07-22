@@ -41,7 +41,7 @@ class _UpdateTaskState extends State<UpdateTask> {
         location: taskLocation.text,
         alert: taskAlert,
         repeatType: dropDownValueRepetir,
-        userId: taskProvider.userlogued.id);
+        userId: taskProvider.userlogued!.id);
 
     var result = await TaskService().updateDataTask(editedTask);
 
@@ -99,7 +99,7 @@ class _UpdateTaskState extends State<UpdateTask> {
     taskName.text = widget.taksToEdit.title;
     taskDetail.text = widget.taksToEdit.details!;
     taskDuration.text = widget.taksToEdit.durationMinutes.toString();
-    taskLocation.text = widget.taksToEdit.location!;
+    taskLocation.text = widget.taksToEdit.location ?? "";
 
     startDate = widget.taksToEdit.startDate;
     dropDownImportantLevelValue = widget.taksToEdit.level;
@@ -112,7 +112,7 @@ class _UpdateTaskState extends State<UpdateTask> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           toolbarHeight: 70,
           elevation: 0,
           title:
@@ -122,8 +122,7 @@ class _UpdateTaskState extends State<UpdateTask> {
             ),
             const Text(
               'Editar Tarea',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             TextButton(
                 onPressed: () {
@@ -136,7 +135,7 @@ class _UpdateTaskState extends State<UpdateTask> {
           ]),
         ),
         body: Container(
-          color: const Color(0xFFEEEFF5),
+          color: Theme.of(context).scaffoldBackgroundColor,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: ListView(
             children: [
@@ -147,7 +146,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskName,
                         decoration: const InputDecoration(
@@ -169,7 +168,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskDetail,
                         decoration: const InputDecoration(
@@ -192,7 +191,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                       height: 57,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 0),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -207,7 +206,8 @@ class _UpdateTaskState extends State<UpdateTask> {
                                   builder: (context) => SizedBox(
                                         height: 250,
                                         child: CupertinoDatePicker(
-                                          backgroundColor: Colors.white,
+                                          backgroundColor:
+                                              Theme.of(context).cardColor,
                                           initialDateTime: DateTime.now(),
                                           onDateTimeChanged: (DateTime value) {
                                             setState(() {
@@ -234,7 +234,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskDuration,
                         keyboardType: const TextInputType.numberWithOptions(),
@@ -257,7 +257,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -299,7 +299,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                 child: Column(
                   children: [
                     Container(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       padding: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
                       child: Row(
@@ -343,7 +343,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 10),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: TextFormField(
                         controller: taskLocation,
                         decoration: const InputDecoration(
@@ -365,7 +365,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 8),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
